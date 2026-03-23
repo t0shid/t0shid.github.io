@@ -310,7 +310,7 @@
   </p>
   <div class="hero-ctas">
     <a href="#projects" class="btn btn-primary">See my work →</a>
-    <a href="https://roblox.com/users/t0shid" class="btn btn-red" target="_blank">Roblox Profile</a>
+    <a href="https://www.roblox.com/fr/users/4208112521" class="btn btn-red" target="_blank">Roblox Profile</a>
     <a href="#contact" class="btn btn-outline">Get in touch</a>
   </div>
   <div class="hero-langs">
@@ -577,9 +577,11 @@
     Hit me up on Discord or check out my Roblox profile.
   </p>
   <div class="contact-links reveal" style="transition-delay:.2s">
-    <a href="#" class="btn btn-primary" target="_blank">Discord — t0shid</a>
-    <a href="https://roblox.com" class="btn btn-red" target="_blank">Roblox Profile</a>
-    <a href="https://github.com" class="btn btn-outline" target="_blank">GitHub</a>
+    <button class="btn btn-primary" id="discord-btn" onclick="copyDiscord()">
+      <span id="discord-label">Discord — t0shid.</span>
+    </button>
+    <a href="https://www.roblox.com/fr/users/4208112521" class="btn btn-red" target="_blank">Roblox Profile</a>
+    <a href="https://github.com/t0shid" class="btn btn-outline" target="_blank">GitHub</a>
   </div>
 </section>
 
@@ -629,6 +631,21 @@ function draw() {
 
 window.addEventListener('resize',resize);
 init();draw();
+
+/* ---- DISCORD COPY ---- */
+function copyDiscord() {
+  navigator.clipboard.writeText('t0shid.').then(() => {
+    const lbl = document.getElementById('discord-label');
+    lbl.textContent = '✓ Copied!';
+    document.getElementById('discord-btn').style.background = 'var(--green)';
+    document.getElementById('discord-btn').style.color = '#000';
+    setTimeout(() => {
+      lbl.textContent = 'Discord — t0shid.';
+      document.getElementById('discord-btn').style.background = '';
+      document.getElementById('discord-btn').style.color = '';
+    }, 2000);
+  });
+}
 
 /* ---- SCROLL REVEAL ---- */
 const obs=new IntersectionObserver(entries=>{
