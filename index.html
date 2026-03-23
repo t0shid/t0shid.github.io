@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>t0shid — Roblox Developer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:      #080a10;
+      --bg2:     #0e1220;
+      --accent:  #00b4ff;
+      --red:     #ff3d5a;
+      --green:   #00e676;
+      --text:    #dce6f5;
+      --muted:   #5a6a88;
+      --border:  rgba(255,255,255,0.06);
+      --card:    rgba(255,255,255,0.025);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    /* ---- NAV ---- */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 4rem;
+      background: rgba(8,10,16,0.75);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.15rem;
+      color: var(--accent); letter-spacing: 0.06em; text-decoration: none;
+    }
+    .nav-logo span { color: var(--red); }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: 0.72rem;
+      letter-spacing: 0.14em; text-transform: uppercase; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-status {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.7rem; color: var(--green);
+    }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,230,118,0.4)} 50%{box-shadow:0 0 0 5px rgba(0,230,118,0)} }
+
+    /* ---- SECTIONS ---- */
+    section {
+      position: relative; z-index: 1;
+      padding: 7rem 4rem;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+    .label {
+      font-size: 0.68rem; color: var(--accent);
+      letter-spacing: 0.22em; text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .label::before { content: '//'; color: var(--red); }
+
+    /* ---- HERO ---- */
+    #hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center;
+      padding-top: 9rem;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(0,180,255,0.07); border: 1px solid rgba(0,180,255,0.18);
+      color: var(--accent); font-size: 0.7rem; letter-spacing: 0.16em;
+      text-transform: uppercase; padding: 0.38rem 1rem;
+      border-radius: 100px; margin-bottom: 2rem; width: fit-content;
+    }
+    .hero-badge span { color: var(--red); }
+    .hero-name {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(3.5rem, 10vw, 7.5rem);
+      line-height: 0.95; letter-spacing: -0.03em; color: #fff;
+    }
+    .hero-name .t { color: var(--red); }
+    .hero-name .accent { color: var(--accent); }
+    .hero-sub {
+      font-size: 0.9rem; color: var(--muted);
+      margin-top: 1.8rem; max-width: 560px; line-height: 1.85;
+    }
+    .hero-sub strong { color: var(--text); font-weight: 500; }
+    .hero-ctas { display: flex; gap: 1rem; margin-top: 2.5rem; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      text-decoration: none; padding: 0.72rem 1.6rem;
+      border-radius: 6px; transition: all 0.2s; cursor: pointer; border: none;
+    }
+    .btn-primary { background: var(--accent); color: #000; font-weight: 600; }
+    .btn-primary:hover { background: #fff; transform: translateY(-2px); }
+    .btn-red { background: var(--red); color: #fff; font-weight: 600; }
+    .btn-red:hover { background: #fff; color: #000; transform: translateY(-2px); }
+    .btn-outline {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+    .hero-langs {
+      display: flex; align-items: center; gap: 1.5rem;
+      margin-top: 3rem; flex-wrap: wrap;
+    }
+    .lang-pill {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.73rem; color: var(--muted);
+      background: var(--card); border: 1px solid var(--border);
+      padding: 0.4rem 0.9rem; border-radius: 100px;
+    }
+    .lang-icon { font-size: 0.9rem; }
+
+    /* ---- ABOUT ---- */
+    #about .about-grid {
+      display: grid; grid-template-columns: 1.2fr 0.8fr;
+      gap: 4rem; align-items: start; margin-top: 3rem;
+    }
+    #about h2 {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem); color: #fff; line-height: 1.15;
+      margin-bottom: 1.5rem;
+    }
+    .about-text p { color: var(--muted); font-size: 0.82rem; line-height: 1.9; margin-bottom: 1rem; }
+    .about-text strong { color: var(--accent); font-weight: 500; }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+      margin-bottom: 1rem;
+    }
+    .stat-card:hover { border-color: rgba(0,180,255,0.3); transform: translateX(5px); }
+    .stat-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--accent); }
+    .stat-lbl { font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+    /* ---- SKILLS ---- */
+    #skills h2 {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem); color: #fff;
+      margin-bottom: 3rem;
+    }
+    .skills-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 1.5rem;
+    }
+    .skill-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.8rem;
+      transition: border-color 0.25s, transform 0.25s;
+    }
+    .skill-card:hover { border-color: rgba(0,180,255,0.25); transform: translateY(-4px); }
+    .skill-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 1.2rem;
+    }
+    .skill-lang-badge {
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.82rem;
+      padding: 0.3rem 0.75rem; border-radius: 6px;
+      letter-spacing: 0.06em;
+    }
+    .luau  { background: rgba(0,230,118,0.1);  color: var(--green);  border: 1px solid rgba(0,230,118,0.2); }
+    .csharp{ background: rgba(120,100,255,0.1); color: #9b8aff;       border: 1px solid rgba(120,100,255,0.2); }
+    .html  { background: rgba(255,61,90,0.1);   color: var(--red);    border: 1px solid rgba(255,61,90,0.2); }
+    .skill-title { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .skill-desc { font-size: 0.76rem; color: var(--muted); line-height: 1.8; margin-bottom: 1.2rem; }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .stag {
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      color: var(--text); font-size: 0.68rem; padding: 0.25rem 0.6rem;
+      border-radius: 4px; letter-spacing: 0.06em;
+      transition: background 0.2s, color 0.2s;
+    }
+    .stag:hover { background: rgba(0,180,255,0.1); color: var(--accent); }
+
+    /* ---- PROJECTS ---- */
+    #projects h2 {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem); color: #fff; margin-bottom: 3rem;
+    }
+    .proj-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 1.5rem;
+    }
+    .proj-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 2rem;
+      display: flex; flex-direction: column; gap: 0.9rem;
+      transition: border-color 0.25s, transform 0.25s; position: relative;
+      overflow: hidden;
+    }
+    .proj-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--red));
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .proj-card:hover { border-color: rgba(0,180,255,0.3); transform: translateY(-5px); }
+    .proj-card:hover::before { opacity: 1; }
+    .proj-top { display: flex; align-items: flex-start; justify-content: space-between; }
+    .proj-icon {
+      width: 48px; height: 48px; border-radius: 10px;
+      background: rgba(0,180,255,0.08); border: 1px solid rgba(0,180,255,0.12);
+      display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+    }
+    .proj-badge {
+      font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.22rem 0.55rem; border-radius: 4px;
+    }
+    .badge-live { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+    .badge-wip  { background: rgba(255,180,0,0.1); color: #ffb400;      border: 1px solid rgba(255,180,0,0.2); }
+    .badge-open { background: rgba(0,180,255,0.1); color: var(--accent); border: 1px solid rgba(0,180,255,0.2); }
+    .proj-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; color: #fff; }
+    .proj-desc  { font-size: 0.77rem; color: var(--muted); line-height: 1.85; flex: 1; }
+    .proj-stack { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .ptag {
+      font-size: 0.65rem; color: var(--red);
+      background: rgba(255,61,90,0.07); border: 1px solid rgba(255,61,90,0.18);
+      padding: 0.2rem 0.5rem; border-radius: 3px; letter-spacing: 0.06em;
+    }
+    .proj-links { display: flex; gap: 1rem; }
+    .plink {
+      font-size: 0.7rem; color: var(--muted); text-decoration: none;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      transition: color 0.2s; display: flex; align-items: center; gap: 0.3rem;
+    }
+    .plink:hover { color: var(--accent); }
+
+    /* ---- CONTACT ---- */
+    #contact { text-align: center; }
+    #contact h2 {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(2rem, 5vw, 3.8rem); color: #fff; line-height: 1.05; margin-bottom: 1rem;
+    }
+    #contact h2 em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--accent), var(--red));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    #contact p { color: var(--muted); font-size: 0.82rem; line-height: 1.85; max-width: 480px; margin: 0 auto 2.5rem; }
+    .contact-links { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+    /* ---- FOOTER ---- */
+    footer {
+      position: relative; z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 1.8rem 4rem;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em;
+    }
+
+    /* ---- REVEAL ---- */
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links, .nav-status { display: none; }
+      section { padding: 5rem 1.5rem; }
+      #about .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      footer { flex-direction: column; gap: 0.5rem; text-align: center; padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-logo"><span>t</span>0shid</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-status"><div class="status-dot"></div>Available for work</div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-badge">🎮 <span>Roblox</span> Developer & Scripter</div>
+  <h1 class="hero-name">
+    <span class="t">t</span>0shid<span class="accent">.</span>
+  </h1>
+  <p class="hero-sub">
+    I build <strong>Roblox games</strong>, systems and tools using <strong>Luau</strong>, <strong>C#</strong> and <strong>HTML</strong>.<br/>
+    From combat systems to full game frameworks — I make ideas come alive on the platform.
+  </p>
+  <div class="hero-ctas">
+    <a href="#projects" class="btn btn-primary">See my work →</a>
+    <a href="https://roblox.com/users/t0shid" class="btn btn-red" target="_blank">Roblox Profile</a>
+    <a href="#contact" class="btn btn-outline">Get in touch</a>
+  </div>
+  <div class="hero-langs">
+    <div class="lang-pill"><span class="lang-icon">🟢</span> Luau</div>
+    <div class="lang-pill"><span class="lang-icon">🟣</span> C#</div>
+    <div class="lang-pill"><span class="lang-icon">🟠</span> HTML / CSS</div>
+    <div class="lang-pill"><span class="lang-icon">⚡</span> Roblox Studio</div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="label reveal">About me</div>
+  <div class="about-grid">
+    <div class="about-text">
+      <h2 class="reveal">Scripting games<br/>since day one.</h2>
+      <p class="reveal" style="transition-delay:.1s">
+        I'm <strong>t0shid</strong>, a self-taught Roblox developer obsessed with writing clean,
+        optimized Luau scripts and building game systems that actually feel good to play.
+      </p>
+      <p class="reveal" style="transition-delay:.2s">
+        From server-side data management to client-side UI and smooth animations,
+        I handle the full stack of a Roblox game. I also write <strong>C#</strong> tools
+        for automation and workflow, and build web pages to showcase my projects.
+      </p>
+      <p class="reveal" style="transition-delay:.3s">
+        Whether it's a competitive FPS, an RPG combat system or a simulator economy —
+        I script it right.
+      </p>
+    </div>
+    <div>
+      <div class="stat-card reveal" style="transition-delay:.1s">
+        <div class="stat-num">15+</div>
+        <div class="stat-lbl">Roblox projects shipped</div>
+      </div>
+      <div class="stat-card reveal" style="transition-delay:.2s">
+        <div class="stat-num">3</div>
+        <div class="stat-lbl">Languages mastered</div>
+      </div>
+      <div class="stat-card reveal" style="transition-delay:.3s">
+        <div class="stat-num">∞</div>
+        <div class="stat-lbl">Hours in Studio</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="label reveal">Skills</div>
+  <h2 class="reveal">What I code with.</h2>
+  <div class="skills-grid">
+
+    <div class="skill-card reveal">
+      <div class="skill-header">
+        <span class="skill-lang-badge luau">Luau</span>
+        <span class="skill-title">Roblox Scripting</span>
+      </div>
+      <p class="skill-desc">
+        My primary language. I write server scripts, local scripts, module scripts —
+        always typed, always clean. From RemoteEvents to DataStores.
+      </p>
+      <div class="skill-tags">
+        <span class="stag">RemoteEvents</span>
+        <span class="stag">DataStore2</span>
+        <span class="stag">Knit Framework</span>
+        <span class="stag">OOP</span>
+        <span class="stag">Animations</span>
+        <span class="stag">Raycasting</span>
+        <span class="stag">Pathfinding</span>
+      </div>
+    </div>
+
+    <div class="skill-card reveal" style="transition-delay:.1s">
+      <div class="skill-header">
+        <span class="skill-lang-badge csharp">C#</span>
+        <span class="skill-title">Tools & Automation</span>
+      </div>
+      <p class="skill-desc">
+        I use C# to build external tools, automation scripts and small apps
+        that support my dev workflow — Discord bots, CLI utilities, asset pipelines.
+      </p>
+      <div class="skill-tags">
+        <span class="stag">.NET</span>
+        <span class="stag">Discord.NET</span>
+        <span class="stag">WinForms</span>
+        <span class="stag">REST APIs</span>
+        <span class="stag">JSON</span>
+        <span class="stag">CLI Tools</span>
+      </div>
+    </div>
+
+    <div class="skill-card reveal" style="transition-delay:.2s">
+      <div class="skill-header">
+        <span class="skill-lang-badge html">HTML / CSS</span>
+        <span class="skill-title">Web & UI</span>
+      </div>
+      <p class="skill-desc">
+        I build web pages to showcase games, write game wikis,
+        or create landing pages. Clean markup, dark themes, zero frameworks.
+      </p>
+      <div class="skill-tags">
+        <span class="stag">HTML5</span>
+        <span class="stag">CSS3</span>
+        <span class="stag">Vanilla JS</span>
+        <span class="stag">Animations</span>
+        <span class="stag">Responsive</span>
+        <span class="stag">Canvas API</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="label reveal">Projects</div>
+  <h2 class="reveal">Games & tools I've built.</h2>
+  <div class="proj-grid">
+
+    <div class="proj-card reveal">
+      <div class="proj-top">
+        <div class="proj-icon">⚔️</div>
+        <span class="proj-badge badge-live">Live</span>
+      </div>
+      <div class="proj-title">VoidStrike</div>
+      <p class="proj-desc">
+        A fast-paced PvP arena game with a custom combat system built entirely in Luau.
+        Features hitbox-accurate melee, ability cooldowns, ranked matchmaking and
+        real-time leaderboards. 50k+ visits since launch.
+      </p>
+      <div class="proj-stack">
+        <span class="ptag">Luau</span>
+        <span class="ptag">Knit</span>
+        <span class="ptag">DataStore2</span>
+        <span class="ptag">Custom VFX</span>
+      </div>
+      <div class="proj-links">
+        <a href="#" class="plink">↗ Play on Roblox</a>
+        <a href="#" class="plink">⌥ GitHub</a>
+      </div>
+    </div>
+
+    <div class="proj-card reveal" style="transition-delay:.1s">
+      <div class="proj-top">
+        <div class="proj-icon">🏰</div>
+        <span class="proj-badge badge-live">Live</span>
+      </div>
+      <div class="proj-title">DungeonCore RPG</div>
+      <p class="proj-desc">
+        Full RPG with a class system, procedurally generated dungeon floors,
+        loot tables, boss AI built with Pathfinding Service, and a persistent
+        inventory saved with ProfileService.
+      </p>
+      <div class="proj-stack">
+        <span class="ptag">Luau</span>
+        <span class="ptag">ProfileService</span>
+        <span class="ptag">Pathfinding</span>
+        <span class="ptag">OOP</span>
+      </div>
+      <div class="proj-links">
+        <a href="#" class="plink">↗ Play on Roblox</a>
+        <a href="#" class="plink">⌥ GitHub</a>
+      </div>
+    </div>
+
+    <div class="proj-card reveal" style="transition-delay:.2s">
+      <div class="proj-top">
+        <div class="proj-icon">💰</div>
+        <span class="proj-badge badge-live">Live</span>
+      </div>
+      <div class="proj-title">AstroTycoon</div>
+      <p class="proj-desc">
+        A space-themed tycoon with a modular dropper system, auto-collectors,
+        upgrade trees and a rebirth economy. Optimized for large servers
+        using efficient remote batching and server-side authority.
+      </p>
+      <div class="proj-stack">
+        <span class="ptag">Luau</span>
+        <span class="ptag">ModuleScripts</span>
+        <span class="ptag">DataStore</span>
+        <span class="ptag">UI Tweening</span>
+      </div>
+      <div class="proj-links">
+        <a href="#" class="plink">↗ Play on Roblox</a>
+      </div>
+    </div>
+
+    <div class="proj-card reveal" style="transition-delay:.1s">
+      <div class="proj-top">
+        <div class="proj-icon">🤖</div>
+        <span class="proj-badge badge-open">Open Source</span>
+      </div>
+      <div class="proj-title">RbxBot</div>
+      <p class="proj-desc">
+        A C# Discord bot bridging a Roblox game and a Discord server.
+        Features rank sync, join/leave alerts, ban relays and in-game
+        announcements via Open Cloud API.
+      </p>
+      <div class="proj-stack">
+        <span class="ptag">C#</span>
+        <span class="ptag">Discord.NET</span>
+        <span class="ptag">Open Cloud</span>
+        <span class="ptag">REST</span>
+      </div>
+      <div class="proj-links">
+        <a href="#" class="plink">⌥ GitHub</a>
+      </div>
+    </div>
+
+    <div class="proj-card reveal" style="transition-delay:.2s">
+      <div class="proj-top">
+        <div class="proj-icon">🌐</div>
+        <span class="proj-badge badge-open">Open Source</span>
+      </div>
+      <div class="proj-title">GamePage Template</div>
+      <p class="proj-desc">
+        A clean HTML/CSS template for Roblox game landing pages. Includes
+        trailer embed, feature highlights, social links, changelog section
+        and dark-mode by default. Zero dependencies.
+      </p>
+      <div class="proj-stack">
+        <span class="ptag">HTML</span>
+        <span class="ptag">CSS</span>
+        <span class="ptag">Vanilla JS</span>
+      </div>
+      <div class="proj-links">
+        <a href="#" class="plink">↗ Live Demo</a>
+        <a href="#" class="plink">⌥ GitHub</a>
+      </div>
+    </div>
+
+    <div class="proj-card reveal" style="transition-delay:.3s">
+      <div class="proj-top">
+        <div class="proj-icon">🔧</div>
+        <span class="proj-badge badge-wip">WIP</span>
+      </div>
+      <div class="proj-title">StudioSync CLI</div>
+      <p class="proj-desc">
+        A C# command-line tool that watches a local folder and auto-pushes
+        Luau scripts to a Roblox game via Open Cloud. Think Rojo but lighter,
+        with live reload support and a simple config file.
+      </p>
+      <div class="proj-stack">
+        <span class="ptag">C#</span>
+        <span class="ptag">.NET 8</span>
+        <span class="ptag">Open Cloud</span>
+        <span class="ptag">FileWatcher</span>
+      </div>
+      <div class="proj-links">
+        <a href="#" class="plink">⌥ GitHub</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="label reveal" style="justify-content:center">Contact</div>
+  <h2 class="reveal">Let's build something<br/><em>on Roblox.</em></h2>
+  <p class="reveal" style="transition-delay:.1s">
+    Looking for a scripter for your game? Want to collab on an open-source tool?
+    Hit me up on Discord or check out my Roblox profile.
+  </p>
+  <div class="contact-links reveal" style="transition-delay:.2s">
+    <a href="#" class="btn btn-primary" target="_blank">Discord — t0shid</a>
+    <a href="https://roblox.com" class="btn btn-red" target="_blank">Roblox Profile</a>
+    <a href="https://github.com" class="btn btn-outline" target="_blank">GitHub</a>
+  </div>
+</section>
+
+<footer>
+  <span>© 2025 t0shid</span>
+  <span>Built with HTML · Scripted with passion</span>
+</footer>
+
+<script>
+/* ---- CANVAS BG ---- */
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, pts;
+const N = 90, D = 130;
+
+function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+function mkPt() { return { x: Math.random()*W, y: Math.random()*H, vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35 }; }
+function init() { resize(); pts = Array.from({length:N}, mkPt); }
+
+function draw() {
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='rgba(255,255,255,0.02)'; ctx.lineWidth=.5;
+  for(let x=0;x<W;x+=70){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=70){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  for(let i=0;i<pts.length;i++){
+    for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<D){
+        ctx.strokeStyle=`rgba(0,180,255,${(1-d/D)*0.15})`;
+        ctx.lineWidth=.5;
+        ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();
+      }
+    }
+  }
+
+  pts.forEach(p=>{
+    ctx.beginPath();ctx.arc(p.x,p.y,1.2,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,180,255,0.45)';ctx.fill();
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>W)p.vx*=-1;
+    if(p.y<0||p.y>H)p.vy*=-1;
+  });
+
+  requestAnimationFrame(draw);
+}
+
+window.addEventListener('resize',resize);
+init();draw();
+
+/* ---- SCROLL REVEAL ---- */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
